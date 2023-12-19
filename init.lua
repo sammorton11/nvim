@@ -1,11 +1,21 @@
-vim.g.everforest_background = 'hard'
--- Set <space> as the leader key
+-- Set <space> as the leader keyinit
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.gruvbox_flat_style = "dark"
 vim.g.gruvbox_flat_style = "hard"
+
+-- aware of tmux prefix -- 
+vim.cmd [[
+  let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
+  let &t_EI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=0\x7\<Esc>\\"
+]]
+--vim.g.lazy_tmux = 1
+
+-- Map a key (e.g., <leader>q) to open the quickfix picker
+vim.api.nvim_set_keymap('n', '<leader>q', [[:Telescope quickfix<CR>]], { noremap = true, silent = true })
+
 
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
@@ -98,34 +108,26 @@ require('lazy').setup({
       end,
     },
   },
-  {
-    -- Theme inspired by Atom
-    'navarasu/onedark.nvim',
-    config = function()
-      vim.cmd.colorscheme 'onedark'
-    end,
-  },
-
+  
   {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
     opts = {
       options = {
         icons_enabled = true,
-        component_separators = { left = '  $  ', right = '  $  '},
-        section_separators = { left = '  $  ', right = '  $  '},
+        theme = 'auto',
+        component_separators = { left = '', right = '' },
+        section_separators = { left = '', right = '' }
       },
     },
   },
-
-  {
+ -- {
     -- Add indentation guides even on blank lines ┊
-    'lukas-reineke/indent-blankline.nvim',
-   opts = {
-      char = '',
-      show_trailing_blankline_indent = true,
-    },
-  },
+ --   'lukas-reineke/indent-blankline.nvim',
+--    main = "ibl",
+ --   opts = {
+ --   },
+--  },
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim',         opts = {} },
@@ -222,11 +224,13 @@ vim.keymap.set('n', '<C-l>', ':MoveHChar(1)<CR>', opts)
 vim.keymap.set('n', '<leader>wf', ':MoveWord(1)<CR>', opts)
 vim.keymap.set('n', '<leader>wb', ':MoveWord(-1)<CR>', opts)
 
--- Visual-mode commands
-vim.keymap.set('v', '<C-j>', ':MoveBlock(1)<CR>', opts)
-vim.keymap.set('v', '<C-k>', ':MoveBlock(-1)<CR>', opts)
-vim.keymap.set('v', '<C-h>', ':MoveHBlock(-1)<CR>', opts)
-vim.keymap.set('v', '<C-l>', ':MoveHBlock(1)<CR>', opts)
+-- Visual-mode commands to move highlighted blocks using the Shift key
+vim.keymap.set('v', '<S-j>', ':MoveBlock(1)<CR>', opts)
+vim.keymap.set('v', '<S-k>', ':MoveBlock(-1)<CR>', opts)
+vim.keymap.set('v', '<S-h>', ':MoveHBlock(-1)<CR>', opts)
+vim.keymap.set('v', '<S-l>', ':MoveHBlock(1)<CR>', opts)
+
+
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -247,6 +251,7 @@ require('telescope').setup {
       i = {
         ['<C-u>'] = false,
         ['<C-d>'] = false,
+        ['<C-q>'] = true,
       },
     },
   },
@@ -266,9 +271,9 @@ vim.keymap.set('n', '<leader>/', function()
   })
 end, { desc = '[/] Fuzzily search in current buffer' })
 
--- Key mappings for navigating between open buffers
-vim.api.nvim_set_keymap('n', '<C-l>', ':bnext<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<C-h>', ':bprev<CR>', { noremap = true, silent = true })
+-- Extra Key mappings for navigating between open buffers
+vim.api.nvim_set_keymap('n', '<C-i>', ':bnext<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<C-o>', ':bprev<CR>', { noremap = true, silent = true })
 
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
@@ -285,7 +290,7 @@ vim.cmd('set expandtab')
 -- Selection Highlights
 vim.cmd([[
     function! SetCustomHighlight()
-        hi! Visual cterm=reverse gui=reverse guibg=#0f0f0f
+        hi! Visual cterm=reverse gui=reverse
     endfunction
 ]])
 
@@ -308,7 +313,7 @@ require('nvim-treesitter.configs').setup {
 
   -- Selection Highlights -- 
   vim.cmd([[
-    hi! Visual cterm=reverse gui=reverse guibg=#0f0f0f
+    hi! Visual cterm=reverse gui=reverse
   ]]),
 
   highlight = { enable = true },
@@ -427,14 +432,14 @@ end
 --
 --  If you want to override the default filetypes that your language server will attach to you can
 --  define the property 'filetypes' to the map in question.
+
 local servers = {
-  clangd = { },
+  clangd = { 'c' },
   gopls = { filetypes = { 'go' } },
   pyright = { filetypes = { 'py' } },
   rust_analyzer = {},
-  tsserver = {},
+  tsserver = { filetypes = {'ts', 'tsx', 'js', 'jsx' } },
   html = { filetypes = { 'html', 'twig', 'hbs' } },
-
   lua_ls = {
     Lua = {
       workspace = { checkThirdParty = false },
@@ -443,17 +448,16 @@ local servers = {
   },
 }
 
-
-local pid = vim.fn.getpid()
-
-local omnisharp_bin = "/usr/local/bin/omnisharp-roslyn/OmniSharp"
-
-require'lspconfig'.omnisharp.setup{
-    cmd = { omnisharp_bin, "--languageserver" , "--hostPID", tostring(pid) }
-    -- Additional configuration can be added here
+-- Kotlin LSP --
+require'lspconfig'.kotlin_language_server.setup{
+  on_attach = on_attach,
+  cmd = { "kotlin-language-server" },
+  filetypes = { "kotlin" },
+  autostart = true,
 }
 
 
+local pid = vim.fn.getpid()
 
 
 -- Setup neovim lua configuration
