@@ -65,13 +65,19 @@ require('lazy').setup({
   },
 
   {'flrnprz/plastic.vim'},
+  {
+	"L3MON4D3/LuaSnip",
+	-- follow latest release.
+	version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+	-- install jsregexp (optional!).
+	build = "make install_jsregexp"
+},
 
   {
     -- Autocompletion
     'hrsh7th/nvim-cmp',
     dependencies = {
       -- Snippet Engine & its associated nvim-cmp source
-      'L3MON4D3/LuaSnip',
       'saadparwaiz1/cmp_luasnip',
 
       -- Adds LSP completion capabilities
@@ -438,7 +444,7 @@ local servers = {
   gopls = { filetypes = { 'go' } },
   pyright = { filetypes = { 'py' } },
   rust_analyzer = {},
-  tsserver = { filetypes = {'ts', 'tsx', 'js', 'jsx' } },
+  tsserver = { },
   html = { filetypes = { 'html', 'twig', 'hbs' } },
   lua_ls = {
     Lua = {
