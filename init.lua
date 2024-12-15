@@ -3,8 +3,15 @@
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+
+
+-- Gruvbox flat settings --
 vim.g.gruvbox_flat_style = "dark"
 vim.g.gruvbox_flat_style = "hard"
+
+
+vim.api.nvim_set_keymap("n", "gD", "<cmd>lua vim.lsp.buf.declaration()<CR>", { noremap = true, silent = true })
+vim.api.nvim_set_keymap("n", "gd", "<cmd>lua vim.lsp.buf.definition()<CR>", { noremap = true, silent = true })
 
 -- aware of tmux prefix -- 
 vim.cmd [[
@@ -121,7 +128,6 @@ require('lazy').setup({
     opts = {
       options = {
         icons_enabled = true,
-        theme = 'auto',
         component_separators = { left = '', right = '' },
         section_separators = { left = '', right = '' }
       },
@@ -210,6 +216,17 @@ vim.o.completeopt = 'menuone,noselect'
 vim.o.termguicolors = true
 
 
+-- Set transparent background
+vim.cmd[[ hi Normal guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi SignColumn guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi NormalNC guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi MsgArea guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi TelescopeNormal guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi VertSplit guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi StatusLine guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi StatusLineNC guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi StatusLineTerm guibg=NONE ctermbg=NONE ]]
+vim.cmd[[ hi StatusLineTermNC guibg=NONE ctermbg=NONE ]]
 
 -- [[ Basic Keymaps ]]
 -- Keymaps for better default experience
@@ -220,8 +237,7 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
--- Move commands
-local opts = { noremap = true, silent = true }
+-- Move commands local opts = { noremap = true, silent = true }
 -- Normal-mode commands
 vim.keymap.set('n', '<C-j>', ':MoveLine(1)<CR>', opts)
 vim.keymap.set('n', '<C-k>', ':MoveLine(-1)<CR>', opts)
@@ -248,6 +264,73 @@ vim.api.nvim_create_autocmd('TextYankPost', {
   group = highlight_group,
   pattern = '*',
 })
+
+require('move').setup({
+	line = {
+		enable = true, -- Enables line movement
+		indent = true  -- Toggles indentation
+	},
+	block = {
+		enable = true, -- Enables block movement
+		indent = true  -- Toggles indentation
+	},
+	word = {
+		enable = true, -- Enables word movement
+   },
+   char = {
+      enable = false -- Enables char movement
+   }
+})
+
+
+
+-- FLOATING TERMINAL ----------------------------------------------------
+--
+-- Keymap to open and control FloatTerm
+vim.api.nvim_set_keymap('n', '<leader>t', ':FloatermNew --height=0.7 --width=0.8 <CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>th', ':FloatermHide!<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>ts', ':FloatermShow!<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<leader>tk', ':FloatermKill!<CR>', { noremap = true, silent = true })
+
+-- Keymaps inside the terminal
+vim.api.nvim_set_keymap('t', '<Esc>', '<C-\\><C-n>:FloatermHide!<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('t', '<leader>q', '<C-\\><C-n>:FloatermHide!<CR>', { noremap = true, silent = true })
+
+-- Floating terminal: Press <leader>v to switch to Normal mode in terminal
+vim.api.nvim_set_keymap('t', '<leader>v', '<C-\\><C-n>', { noremap = true, silent = true })
+
+--------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+-- Noice setup --
+--[[ require("noice").setup({
+   presets = {
+      -- you can enable a preset by setting it to true, or a table that will override the preset config
+      -- you can also add custom presets that you can enable/disable with enabled=true
+      bottom_search = true,          -- use a classic bottom cmdline for search
+      command_palette = true,        -- position the cmdline and popupmenu together
+      long_message_to_split = false, -- long messages will be sent to a split
+      inc_rename = false,            -- enables an input dialog for inc-rename.nvim
+   },
+   routes = {
+      {
+         filter = {
+            event = "msg_show",
+            kind = "",
+            find = "written",
+         },
+         opts = { skip = true },
+      },
+   },
+
+}) ]]
+
 
 -- [[ Configure Telescope ]]
 -- See `:help telescope` and `:help telescope.setup()`
@@ -278,8 +361,8 @@ vim.keymap.set('n', '<leader>/', function()
 end, { desc = '[/] Fuzzily search in current buffer' })
 
 -- Extra Key mappings for navigating between open buffers
-vim.api.nvim_set_keymap('n', '<C-i>', ':bnext<CR>', { noremap = true, silent = true })
-vim.api.nvim_set_keymap('n', '<C-o>', ':bprev<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<S-l>', ':bnext<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('n', '<S-h>', ':bprev<CR>', { noremap = true, silent = true })
 
 vim.keymap.set('n', '<leader>gf', require('telescope.builtin').git_files, { desc = 'Search [G]it [F]iles' })
 vim.keymap.set('n', '<leader>sf', require('telescope.builtin').find_files, { desc = '[S]earch [F]iles' })
@@ -300,6 +383,14 @@ vim.cmd([[
     endfunction
 ]])
 
+-- Custom highlight groups for the selection
+vim.cmd([[
+   hi! Visual cterm=reverse gui=reverse
+]])
+
+-- HABAMAX SETTINGS ----------------------------------------------------
+-------------------------------------------------------------------------
+
 -- Set up an autocommand to reapply the custom highlight when the color scheme changes
 vim.cmd([[
     augroup CustomHighlight
@@ -308,22 +399,27 @@ vim.cmd([[
     augroup END
 ]])
 
--- Custom highlight groups for the selection
 -- [[ Configure Treesitter ]]
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'kotlin'  },
--- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'kotlin' },
+  
+  -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = true,
 
-  -- Selection Highlights -- 
-  vim.cmd([[
-    hi! Visual cterm=reverse gui=reverse
-  ]]),
+  highlight = {
+    enable = true,
+  },
 
-  highlight = { enable = true },
-  indent = { enable = true, indent_width = 3, method = 'tab' },
+  indent = {
+    enable = true,
+    -- Treesitter doesn't provide indent_width or method option directly
+    -- You can set these via Neovim's options or use a custom plugin.
+    -- Example: vim.opt.tabstop = 3
+    --          vim.opt.shiftwidth = 3
+  },
+
   incremental_selection = {
     enable = true,
     keymaps = {
@@ -333,6 +429,7 @@ require('nvim-treesitter.configs').setup {
       node_decremental = '<M-space>',
     },
   },
+
   textobjects = {
     select = {
       enable = true,
@@ -378,6 +475,7 @@ require('nvim-treesitter.configs').setup {
     },
   },
 }
+
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
@@ -541,3 +639,15 @@ cmp.setup {
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+-- Set transparent background
+-- vim.cmd[[ hi Normal guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi SignColumn guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi NormalNC guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi MsgArea guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi TelescopeNormal guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi VertSplit guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi StatusLine guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi StatusLineNC guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi StatusLineTerm guibg=NONE ctermbg=NONE ]]
+-- vim.cmd[[ hi StatusLineTermNC guibg=NONE ctermbg=NONE ]]

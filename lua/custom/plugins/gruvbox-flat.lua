@@ -5,10 +5,4 @@ return {
       priority = 1000,
       lazy = false,
    },
-   {
-      "LazyVim/LazyVim",
-      opts = {
-         colorscheme = "gruvbox-flat",
-      },
-   }
 }
